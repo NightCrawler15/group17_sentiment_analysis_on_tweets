@@ -23,10 +23,11 @@ def get_tweets():
 
     #Use csv writer
     csvWriter = csv.writer(csvFile)
+    csvWriter.writerow(["id","user","fullname","url","timestamp","like","retweets","text"])
     # startDate = datetime.datetime(2020, 1, 1, 0, 0, 0)
     # endDate =   datetime.datetime(2012, 1, 1, 0, 0, 0)
     # call twitter api to fetch tweets
-    fetched_tweets = tweepy.Cursor(api.search_tweets,q=('bitcoin'), lang = "en").items(2000)
+    fetched_tweets = tweepy.Cursor(api.search_tweets,q=('bitcoin'), count=2000000, lang = "en").items()
     for tweet in fetched_tweets:
         # Write a row to the CSV file. I use encode UTF-8
         csvWriter.writerow([tweet.id, tweet.user.screen_name, tweet.user.name, tweet.user.url, tweet.created_at, tweet.favorite_count, tweet.retweet_count, tweet.text])
