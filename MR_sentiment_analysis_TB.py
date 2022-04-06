@@ -1,9 +1,8 @@
 from mrjob.job import MRJob
 import re
-import nltk
-nltk.download('vader_lexicon')
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
-  
+from textblob import Blobber
+from textblob.sentiments import NaiveBayesAnalyzer
+
 class MRCleanText(MRJob):
     def filterText(self, txt):
         # Remove mentions
@@ -31,14 +30,16 @@ class MRCleanText(MRJob):
         tweet_id = column[0]
         # Doing some initial Fltering
         txt = self.filterText(column[1])
-        # Tokenizing the words and converting into UTF-8
+        # Initializing Native Bayes analyzer
         # Sentiment intensity analyser uses Naiive Bayes to analyse intensity of the text
-        #yield line, 1
-        score = SentimentIntensityAnalyzer().polarity_scores(txt)  
-        if score['neg'] > score['pos']:
-            yield "Negative", 1
-        elif score['pos'] > score['neg']:
+        blob = Blobber(analyzer=NaiveBayesAnalyzer())
+        # classifying into positive/ negative using naive bayes
+        classifier = blob(txt).sentiment
+  
+        if round(classifier[1], 2) > round(classifier[2], 2):
             yield "Positive", 1
+        elif round(classifier[1], 2) < round(classifier[2], 2):
+            yield "Negative", 1
         else:
             yield "Neutral", 1   
 
