@@ -48,7 +48,8 @@ def analyze_text(txt, sizeTweets):
     global count
     count += 1
     # print(sentiment)
-    sentiment = analyzer(clean_data(str(txt)))
+    text = clean_data(str(txt))
+    sentiment = analyzer(text)
     #print(sentiment)
     tweets_sentiments[sentiment] += 1
     if count == sizeTweets:

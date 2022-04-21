@@ -12,6 +12,7 @@ sql = SQLContext(sc)
 
 from textblob import Blobber
 from textblob.sentiments import NaiveBayesAnalyzer
+
 count = 0
 tweets_sentiments = {"Negative": 0, "Positive": 0, "Neutral": 0}
 
@@ -58,8 +59,10 @@ def analyzer(txt):
     # Initializing Native Bayes analyzer
     # Sentiment intensity analyser uses Naiive Bayes 
     blob = Blobber(analyzer=NaiveBayesAnalyzer())
+    # Doing some initial Fltering
+    text = clean_data(str(txt))
     # classifying into positive/ negative using naive bayes
-    classifier = blob(clean_data(str(txt))).sentiment
+    classifier = blob(text).sentiment
 
     if round(classifier[1], 2) > round(classifier[2], 2):
         return "Positive"

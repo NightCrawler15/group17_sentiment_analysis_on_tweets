@@ -26,7 +26,5 @@ with open("covid_tweets_clean.csv", "w") as result:
         tweet_id = r[0]
         text = re.sub(r'\n', ' ', r[6])
         writer.writerow((tweet_id, text))
-        if count > 5 : 
-            break
 
 print(count, date)
