@@ -2,6 +2,9 @@ from mrjob.job import MRJob
 import re
 from textblob import Blobber
 from textblob.sentiments import NaiveBayesAnalyzer
+# Initializing Native Bayes analyzer
+# Sentiment intensity analyser uses Naiive Bayes to analyse intensity of the text
+blob = Blobber(analyzer=NaiveBayesAnalyzer())
 
 class MRCleanText(MRJob):
     def filterText(self, txt):
@@ -30,9 +33,6 @@ class MRCleanText(MRJob):
         tweet_id = column[0]
         # Doing some initial Fltering
         txt = self.filterText(column[1])
-        # Initializing Native Bayes analyzer
-        # Sentiment intensity analyser uses Naiive Bayes to analyse intensity of the text
-        blob = Blobber(analyzer=NaiveBayesAnalyzer())
         # classifying into positive/ negative using naive bayes
         classifier = blob(txt).sentiment
   

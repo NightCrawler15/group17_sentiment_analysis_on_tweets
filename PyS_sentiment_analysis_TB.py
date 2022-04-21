@@ -10,11 +10,12 @@ from pyspark.sql import SQLContext, SparkSession
 sql = SQLContext(sc)
 # spark = SparkSession(sc)
 
-import nltk
-nltk.download('vader_lexicon')
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
-
+from textblob import Blobber
+from textblob.sentiments import NaiveBayesAnalyzer
 tweets_sentiments = {"Negative": 0, "Positive": 0, "Neutral": 0}
+# Initializing Native Bayes analyzer
+# Sentiment intensity analyser uses Naiive Bayes 
+blob = Blobber(analyzer=NaiveBayesAnalyzer())
 
 def clean_data(txt):
     # Remove mentions
@@ -42,22 +43,22 @@ def load_data(file_location):
     return
 
 def analyze_text(txt):
+    # sentiments = {"Negative": 0, "Positive": 0, "Neutral": 0}
     global tweets_sentiments
-    sentiment = analyzer(txt)
-    #print(sentiment)
-    tweets_sentiments[sentiment] += 1
+    tweets_sentiments[analyzer(txt)] += 1
     return
 
 def analyzer(txt):
-    # Tokenizing the words and converting into UTF-8
-    # Sentiment intensity analyser uses Naiive Bayes to analyse intensity of the text
-    score = SentimentIntensityAnalyzer().polarity_scores(txt)  
-    if score['neg'] > score['pos']:
-        return "Negative"
-    elif score['pos'] > score['neg']:
+    # passing the filtered data and
+    # classifying into positive/ negative using naive bayes
+    classifier = blob(clean_data(txt)).sentiment
+
+    if round(classifier[1], 2) > round(classifier[2], 2):
         return "Positive"
+    elif round(classifier[1], 2) < round(classifier[2], 2):
+        return "Negative"
     else:
-        return "Neutral" 
+        return "Neutral"
 
 if __name__ == '__main__':
     load_data("hdfs://namenode:9000/group17_sentiment_analysis_on_tweets/covid_tweets_clean.csv")
