@@ -12,10 +12,8 @@ sql = SQLContext(sc)
 
 from textblob import Blobber
 from textblob.sentiments import NaiveBayesAnalyzer
+count = 0
 tweets_sentiments = {"Negative": 0, "Positive": 0, "Neutral": 0}
-# Initializing Native Bayes analyzer
-# Sentiment intensity analyser uses Naiive Bayes 
-blob = Blobber(analyzer=NaiveBayesAnalyzer())
 
 def clean_data(txt):
     # Remove mentions
@@ -39,19 +37,29 @@ def clean_data(txt):
 def load_data(file_location):
     tweets_df = sql.read.csv(file_location, header=False, inferSchema= True)
     # tweets_df.show()
-    tweets_df.rdd.foreach(lambda x: analyze_text(x['_c1']))
+    sizeTweets = tweets_df.rdd.count()
+    tweets_df.rdd.foreach(lambda x: analyze_text(x['_c1'], sizeTweets))
     return
 
-def analyze_text(txt):
+def analyze_text(txt, sizeTweets):
     # sentiments = {"Negative": 0, "Positive": 0, "Neutral": 0}
     global tweets_sentiments
-    tweets_sentiments[analyzer(txt)] += 1
-    return
+    global count
+    sentiment = analyzer(txt)
+    count += 1
+    # print(sentiment)
+    tweets_sentiments[sentiment] = tweets_sentiments[sentiment] + 1
+    if count == sizeTweets:
+        print(tweets_sentiments)
+    return 
 
 def analyzer(txt):
     # passing the filtered data and
+    # Initializing Native Bayes analyzer
+    # Sentiment intensity analyser uses Naiive Bayes 
+    blob = Blobber(analyzer=NaiveBayesAnalyzer())
     # classifying into positive/ negative using naive bayes
-    classifier = blob(clean_data(txt)).sentiment
+    classifier = blob(clean_data(str(txt))).sentiment
 
     if round(classifier[1], 2) > round(classifier[2], 2):
         return "Positive"
@@ -62,4 +70,4 @@ def analyzer(txt):
 
 if __name__ == '__main__':
     load_data("hdfs://namenode:9000/group17_sentiment_analysis_on_tweets/covid_tweets_clean.csv")
-    print(tweets_sentiments)
+    # print(tweets_sentiments)

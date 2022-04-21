@@ -32,7 +32,7 @@ class MRCleanText(MRJob):
         column = line.split(',')
         tweet_id = column[0]
         # Doing some initial Fltering
-        txt = self.filterText(column[1])
+        txt = self.filterText(str(column[1]))
         # classifying into positive/ negative using naive bayes
         classifier = blob(txt).sentiment
   

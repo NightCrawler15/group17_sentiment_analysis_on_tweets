@@ -30,7 +30,7 @@ class MRCleanText(MRJob):
         column = line.split(',')
         tweet_id = column[0]
         # Doing some initial Fltering
-        txt = self.filterText(column[1])
+        txt = self.filterText(str(column[1]))
         # Tokenizing the words and converting into UTF-8
         # Sentiment intensity analyser uses Naiive Bayes to analyse intensity of the text
         #yield line, 1

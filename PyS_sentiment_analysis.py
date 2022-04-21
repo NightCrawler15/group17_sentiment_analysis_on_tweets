@@ -14,6 +14,7 @@ import nltk
 nltk.download('vader_lexicon')
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 
+count = 0
 tweets_sentiments = {"Negative": 0, "Positive": 0, "Neutral": 0}
 
 def clean_data(txt):
@@ -38,14 +39,20 @@ def clean_data(txt):
 def load_data(file_location):
     tweets_df = sql.read.csv(file_location, header=False, inferSchema= True)
     # tweets_df.show()
-    tweets_df.rdd.foreach(lambda x: analyze_text(x['_c1']))
+    sizeTweets = tweets_df.rdd.count()
+    tweets_df.rdd.foreach(lambda x: analyze_text(x['_c1'], sizeTweets))
     return
 
-def analyze_text(txt):
+def analyze_text(txt, sizeTweets):
     global tweets_sentiments
-    sentiment = analyzer(txt)
+    global count
+    count += 1
+    # print(sentiment)
+    sentiment = analyzer(clean_data(str(txt)))
     #print(sentiment)
     tweets_sentiments[sentiment] += 1
+    if count == sizeTweets:
+        print(tweets_sentiments)
     return
 
 def analyzer(txt):
@@ -61,4 +68,4 @@ def analyzer(txt):
 
 if __name__ == '__main__':
     load_data("hdfs://namenode:9000/group17_sentiment_analysis_on_tweets/covid_tweets_clean.csv")
-    print(tweets_sentiments)
+    # print(tweets_sentiments)
