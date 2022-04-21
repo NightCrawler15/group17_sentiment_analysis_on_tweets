@@ -28,7 +28,7 @@ def get_tweets():
     # startDate = datetime.datetime(2020, 1, 1, 0, 0, 0)
     endDate =   datetime.datetime(2022, 3, 16, 0, 0, 0)
     # call twitter api to fetch tweets
-    fetched_tweets = tweepy.Cursor(api.search_tweets,q=('covid OR corona OR #CovidVaccine since:2022-04-05 until:2022-04-20'), count=2000000, lang = "en").items()
+    fetched_tweets = tweepy.Cursor(api.search_tweets,q=('covid OR corona OR #CovidVaccine since:2022-04-05 until:2022-04-19'), count=2000000, lang = "en").items()
     for tweet in fetched_tweets:
         # Write a row to the CSV file. I use encode UTF-8
         csvWriter.writerow([tweet.id, tweet.user.screen_name, tweet.user.name, tweet.created_at, tweet.favorite_count, tweet.retweet_count, tweet.text])

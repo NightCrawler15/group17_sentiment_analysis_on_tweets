@@ -2,7 +2,8 @@ import csv
 import re
 import pandas as pd
 import os.path
-
+count = 0
+date = ''
 '''df = pd.read_csv('train.csv', encoding = "ISO-8859-1")
 with open("train_clean.csv", "w") as result:
     writer = csv.writer(result)
@@ -20,7 +21,9 @@ with open("covid_tweets_clean.csv", "w") as result:
         # for r in reader:
 	for index, r in df.iterrows():    
             # Use CSV Index to remove a column from CSV
-            #r[3] = r['url']
+            date = r[3]
+            count = count + 1
             tweet_id = r[0]
             text = re.sub(r'\n', ' ', r[6])
             writer.writerow((tweet_id, text))
+print(count, date)
