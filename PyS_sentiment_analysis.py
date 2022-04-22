@@ -2,8 +2,6 @@ import findspark
 findspark.init('/opt/spark')
 
 import re
-import pyspark
-from operator import add
 from pyspark import SparkContext
 sc = SparkContext()
 from pyspark.sql import SQLContext, SparkSession

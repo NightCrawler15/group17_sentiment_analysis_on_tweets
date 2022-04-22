@@ -7,7 +7,13 @@ from textblob.sentiments import NaiveBayesAnalyzer
 blob = Blobber(analyzer=NaiveBayesAnalyzer())
 
 class MRCleanText(MRJob):
-    def filterText(self, txt):
+    def mapper(self, _, line):
+        # seperating comma seperated
+        line = line.strip() # removing unwanted white space
+        column = line.split(',')
+        tweet_id = column[0]
+        # Doing some initial Fltering
+        txt = str(column[1])
         # Remove mentions
         txt = re.sub(r'@[A-Za-z0-9_]+', '', txt)
         # Remove hashtags
@@ -24,15 +30,6 @@ class MRCleanText(MRJob):
         txt = re.sub(r'\n', ' ', txt)
         #converting lower text
         txt = txt.lower()
-        return txt
-
-    def mapper(self, _, line):
-        # seperating comma seperated
-        line = line.strip() # removing unwanted white space
-        column = line.split(',')
-        tweet_id = column[0]
-        # Doing some initial Fltering
-        txt = self.filterText(str(column[1]))
         # classifying into positive/ negative using naive bayes
         classifier = blob(txt).sentiment
   
