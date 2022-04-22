@@ -78,11 +78,14 @@ class Tweets(MRJob):
         for word in txt.split():
             clean_wrd = Tweets._clean_word(word)
             score = self._eval_word(clean_wrd)
+            total += 1
             if score >= 0:
                 pos = pos + score
             else:
                 neg = neg + score
-            total += 1
+        # if empty text
+        if total == 0: 
+            total = 1
         if round(pos/total, 5) > round(abs(neg/total), 5):
             yield "Positive", 1
         elif  round(pos/total, 5) <  round(abs(neg/total), 5):

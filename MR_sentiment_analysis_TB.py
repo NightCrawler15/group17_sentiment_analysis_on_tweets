@@ -11,7 +11,7 @@ class MRCleanText(MRJob):
         # seperating comma seperated
         line = line.strip() # removing unwanted white space
         # Doing some initial Fltering
-        column = line if line != '' else "This is a dummy text!"
+        column = line if line != '' else "This is a dummy text!" 
         # Doing some initial Fltering
         txt = str(column)
         # Remove mentions

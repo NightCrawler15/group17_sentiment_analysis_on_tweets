@@ -38,7 +38,7 @@ def load_data(file_location):
     tweets_df = sql.read.csv(file_location, header=False, inferSchema= True)
     # tweets_df.show()
     sizeTweets = tweets_df.rdd.count()
-    tweets_df.rdd.foreach(lambda x: analyze_text(x['_c1'], sizeTweets))
+    tweets_df.rdd.foreach(lambda x: analyze_text(x['_c0'], sizeTweets))
     return
 
 def analyze_text(txt, sizeTweets):
