@@ -16,7 +16,7 @@ with open("train_clean.csv", "w") as result:
         writer.writerow((r[5], polarity))'''
 
 df = pd.read_csv('covid_tweets.csv', encoding = "ISO-8859-1")      
-with open("covid_tweets_clean.csv", "w") as result:
+with open("covid_tweets_clean_sm.csv", "w") as result:
     writer = csv.writer(result)
     # for r in reader:
     for index, r in df.iterrows():    
@@ -24,6 +24,7 @@ with open("covid_tweets_clean.csv", "w") as result:
         date = r[3]
         count = count + 1
         text = re.sub(r'\n', ' ', r[6])
-        writer.writerow((text))
+        writer.writerow([text])
+        if count == 10: break
 
 print(count, date)
