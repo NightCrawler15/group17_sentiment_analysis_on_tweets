@@ -1,11 +1,41 @@
 from mrjob.job import MRJob
+from mrjob.step import MRStep
 import re
-import nltk
-nltk.download('vader_lexicon')
-from nltk.sentiment.vader import SentimentIntensityAnalyzer
-  
-class MRCleanText(MRJob):
-    def filterText(self, txt):
+
+class Tweets(MRJob):
+    MRJob.SORT_VALUES = True
+
+    WORDS_DICT = {}
+
+    def mapper_init(self):
+        self.WORDS_DICT = Tweets._words_score_dict()
+    
+    @staticmethod
+    def _words_score_dict():
+        #Loading the dictionary at the time of initiation
+        words_file = open('/home/ubuntu/AFINN-en-165.txt')
+
+        words_dict = {}
+
+        for line in words_file:
+            word, score = line.split('\t')
+            words_dict[word] = int(score)
+
+        words_file.close()
+        return words_dict
+
+    @staticmethod
+    def _clean_word(word):
+        #Extracting only text
+        results = re.findall('^#?[a-zA-Z_]*', word)
+
+        if len(results) > 0:
+            word = results[0].lower()
+
+        return word
+
+    @staticmethod
+    def _filter_text(txt):
         # Remove mentions
         txt = re.sub(r'@[A-Za-z0-9_]+', '', txt)
         # Remove hashtags
@@ -23,32 +53,55 @@ class MRCleanText(MRJob):
         #converting lower text
         txt = txt.lower()
         return txt
+    
+    def _eval_word(self, word):
+        if word in self.WORDS_DICT:
+            return self.WORDS_DICT[word]
+        else:
+            return 0
+    
+    # returns true if key exist
+    @staticmethod
+    def _field_in_dict(dictionary, field):
+        return dictionary is not None and field in dictionary and dictionary[field] is not None
+
 
     def mapper(self, _, line):
         # seperating comma seperated
         line = line.strip() # removing unwanted white space
-        column = line.split(',')
-        tweet_id = column[0]
         # Doing some initial Fltering
-        txt = self.filterText(str(column[1]))
-        # Tokenizing the words and converting into UTF-8
-        # Sentiment intensity analyser uses Naiive Bayes to analyse intensity of the text
-        #yield line, 1
-        score = SentimentIntensityAnalyzer().polarity_scores(txt)  
-        if score['neg'] > score['pos']:
-            yield "Negative", 1
-        elif score['pos'] > score['neg']:
+        column = line if line != '' else "This is a dummy text!"
+        txt = Tweets._filter_text(str(column))
+        pos = 0
+        neg = 0
+        total = 0
+        for word in txt.split():
+            clean_wrd = Tweets._clean_word(word)
+            score = self._eval_word(clean_wrd)
+            if score >= 0:
+                pos = pos + score
+            else:
+                neg = neg + score
+            total += 1
+        if round(pos/total, 5) > round(abs(neg/total), 5):
             yield "Positive", 1
+        elif  round(pos/total, 5) <  round(abs(neg/total), 5):
+            yield "Negative", 1
         else:
-            yield "Neutral", 1   
+            yield "Neutral", 1
 
-    def combiner(self, key, text):
-        yield key, sum(text)
+    def combiner(self, key, value):
+        yield(key, sum(value))
 
-    def reducer(self, key, text):
-        yield key, sum(text)
+    def reducer(self, key, value):
+        yield(key, sum(value))
 
+    def steps(self):
+        return [MRStep(mapper_init=self.mapper_init,
+                       mapper=self.mapper,
+                       combiner=self.combiner,
+                       reducer=self.reducer
+                       )]
 
 if __name__ == '__main__':
-    MRCleanText.run()
-
+    Tweets.run()
