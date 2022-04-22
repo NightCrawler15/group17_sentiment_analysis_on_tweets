@@ -23,8 +23,7 @@ with open("covid_tweets_clean.csv", "w") as result:
         # Use CSV Index to remove a column from CSV
         date = r[3]
         count = count + 1
-        tweet_id = r[0]
         text = re.sub(r'\n', ' ', r[6])
-        writer.writerow((tweet_id, text))
+        writer.writerow((text))
 
 print(count, date)
