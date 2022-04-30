@@ -73,6 +73,8 @@ def load_data(file_location):
 def analyzer(txt):
     # Tokenizing the words and converting into UTF-8
     # Sentiment intensity analyser uses Naiive Bayes to analyse intensity of the text
+    # Doing some initial Fltering
+    txt = clean_data(str(txt))
     pos = 0
     neg = 0
     total = 0
