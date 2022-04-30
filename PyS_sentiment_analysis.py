@@ -12,9 +12,6 @@ sql = SQLContext(sc)
 
 WORDS_DICT = {}
 
-count = 0
-tweets_sentiments = {"Negative": 0, "Positive": 0, "Neutral": 0}
-
 def words_score_dict():
     #Loading the dictionary at the time of initiation
     words_file = open('/home/ubuntu/AFINN-en-165.txt')
