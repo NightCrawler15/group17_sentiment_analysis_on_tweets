@@ -6,7 +6,8 @@ import pyspark
 from operator import add
 from pyspark import SparkContext
 sc = SparkContext()
-from pyspark.sql import SQLContext, SparkSession
+from pyspark.sql import SQLContext
+from pyspark.sql import functions as func
 sql = SQLContext(sc)
 # spark = SparkSession(sc)
 
@@ -14,7 +15,6 @@ from textblob import Blobber
 from textblob.sentiments import NaiveBayesAnalyzer
 
 count = 0
-tweets_sentiments = {"Negative": 0, "Positive": 0, "Neutral": 0}
 
 def clean_data(txt):
     # Remove mentions
@@ -38,21 +38,8 @@ def clean_data(txt):
 def load_data(file_location):
     tweets_df = sql.read.csv(file_location, header=False, inferSchema= True)
     # tweets_df.show()
-    sizeTweets = tweets_df.rdd.count()
-    tweets_df.rdd.foreach(lambda x: analyze_text(x['_c0'], sizeTweets))
-    return
-
-def analyze_text(txt, sizeTweets):
-    # sentiments = {"Negative": 0, "Positive": 0, "Neutral": 0}
-    global tweets_sentiments
-    global count
-    sentiment = analyzer(txt)
-    count += 1
-    # print(sentiment)
-    tweets_sentiments[sentiment] = tweets_sentiments[sentiment] + 1
-    if count == sizeTweets:
-        print(tweets_sentiments)
-    return 
+    sentiments = tweets_df.map(lambda x: analyzer(x['_c0']))
+    return sentiments
 
 def analyzer(txt):
     # passing the filtered data and
@@ -65,12 +52,13 @@ def analyzer(txt):
     classifier = blob(text).sentiment
 
     if round(classifier[1], 2) > round(classifier[2], 2):
-        return "Positive"
+        return ("Positive", 1)
     elif round(classifier[1], 2) < round(classifier[2], 2):
-        return "Negative"
+        return ("Negative", 1)
     else:
-        return "Neutral"
+        return ("Neutral", 1)
 
 if __name__ == '__main__':
-    load_data("hdfs://namenode:9000/group17_sentiment_analysis_on_tweets/covid_tweets_clean.csv")
-    # print(tweets_sentiments)
+    tweets_sentiments = load_data("hdfs://namenode:9000/group17_sentiment_analysis_on_tweets/covid_tweets_clean.csv")
+    # Shows total sum of sentiments
+    tweets_sentiments.group_by("_c0").agg(func.col("_c0"), func.sum("_c1")).show()

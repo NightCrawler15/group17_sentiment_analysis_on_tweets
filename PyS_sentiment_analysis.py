@@ -4,7 +4,9 @@ findspark.init('/opt/spark')
 import re
 from pyspark import SparkContext
 sc = SparkContext()
-from pyspark.sql import SQLContext, SparkSession
+from pyspark.sql import SQLContext
+from pyspark.sql import functions as func
+
 sql = SQLContext(sc)
 # spark = SparkSession(sc)
 
@@ -67,32 +69,17 @@ def clean_data(txt):
 def load_data(file_location):
     tweets_df = sql.read.csv(file_location, header=False, inferSchema= True)
     # tweets_df.show()
-    sizeTweets = tweets_df.rdd.count()
-    tweets_df.rdd.foreach(lambda x: analyze_text(x['_c0'], sizeTweets))
-    return
-
-def analyze_text(txt, sizeTweets):
-    global tweets_sentiments
-    global count
-    count += 1
-    # print(sentiment)
-    text = clean_data(str(txt))
-    sentiment = analyzer(text)
-    #print(sentiment)
-    tweets_sentiments[sentiment] += 1
-    if count == sizeTweets:
-        print(tweets_sentiments)
-    return
+    tweets_sentiment = tweets_df.map(lambda x: analyzer(x['_c0']))
+    return tweets_sentiment
 
 # Sentiment analysis takes place here
 def analyzer(txt):
     # Tokenizing the words and converting into UTF-8
     # Sentiment intensity analyser uses Naiive Bayes to analyse intensity of the text
-    text = txt if txt != '' else "This is a dummy text!"
     pos = 0
     neg = 0
     total = 0
-    for word in text.split():
+    for word in txt.split():
         clean_wrd = clean_word(word)
         score = eval_word(clean_wrd)
         total += 1
@@ -104,13 +91,14 @@ def analyzer(txt):
     if total == 0: 
         total = 1
     if round(pos/total, 5) > round(abs(neg/total), 5):
-        return "Positive"
+        return ("Positive", 1)
     elif  round(pos/total, 5) <  round(abs(neg/total), 5):
-        return "Negative"
+        return ("Negative", 1)
     else:
-        return "Neutral"
+        return ("Neutral", 1)
 
 if __name__ == '__main__':
     WORDS_DICT = words_score_dict()
-    load_data("hdfs://namenode:9000/group17_sentiment_analysis_on_tweets/covid_tweets_clean.csv")
-    # print(tweets_sentiments)
+    tweets_sentiments = load_data("hdfs://namenode:9000/group17_sentiment_analysis_on_tweets/covid_tweets_clean.csv")
+    # Shows total sum of sentiments
+    tweets_sentiments.group_by("_c0").agg(func.col("_c0"), func.sum("_c1")).show()
