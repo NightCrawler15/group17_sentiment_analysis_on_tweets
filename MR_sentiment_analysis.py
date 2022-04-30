@@ -55,10 +55,14 @@ class Tweets(MRJob):
         return txt
     
     def _eval_word(self, word):
+        negators = {'not','no','never'}
+        sentiment_score = 0
         if word in self.WORDS_DICT:
-            return self.WORDS_DICT[word]
-        else:
-            return 0
+            if word in negators:
+		        sentiment_score = self.WORDS_DICT.get(word,0) * -1
+            else:
+                sentiment_score = self.WORDS_DICT.get(word,0)
+        return sentiment_score
     
     # returns true if key exist
     @staticmethod

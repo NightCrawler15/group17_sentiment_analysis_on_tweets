@@ -27,10 +27,14 @@ def words_score_dict():
     return words_dict
 
 def eval_word(word):
+    negators = {'not','no','never'}
+    sentiment_score = 0
     if word in WORDS_DICT:
-        return WORDS_DICT[word]
-    else:
-        return 0
+        if word in negators:
+            sentiment_score = WORDS_DICT.get(word,0) * -1
+        else:
+            sentiment_score = WORDS_DICT.get(word,0)
+    return sentiment_score
 
 def clean_word(word):
     #Extracting only text
